@@ -1,0 +1,44 @@
+# Django #
+*.log
+*.pot
+*.pyc
+__pycache__/
+sqlite3.db
+media/
+staticfiles/
+*.py[cod]
+*$py.class
+
+# Environment #
+.env
+venv/
+env/
+ENV/
+.venv/
+
+# VSCode / PyCharm #
+.vscode/
+.idea/
+
+# OS generated files #
+.DS_Store
+Thumbs.db
+
+# Migrations (optional)
+# */migrations/
+# !*/migrations/__init__.py
+
+# Coverage / Testing #
+.coverage
+htmlcov/
+.tox/
+pytest_cache/
+
+# Build / Distribution #
+build/
+dist/
+*.egg-info/
+
+# Others #
+*.bak
+*.swp
