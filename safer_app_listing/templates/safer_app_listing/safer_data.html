@@ -1,0 +1,126 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Safer Data Listings</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 30px;
+            background-color: #fafafa;
+        }
+        h2 {
+            color: #333;
+        }
+        form {
+            margin-bottom: 20px;
+        }
+        input[type="text"], input[type="number"] {
+            padding: 6px;
+            margin-right: 8px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+        }
+        button {
+            padding: 6px 10px;
+            border: none;
+            background-color: #007bff;
+            color: white;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+        button:hover {
+            background-color: #0056b3;
+        }
+        a {
+            margin-left: 8px;
+            text-decoration: none;
+            color: #007bff;
+        }
+        a:hover {
+            text-decoration: underline;
+        }
+        table {
+            border-collapse: collapse;
+            width: 100%;
+            background: white;
+        }
+        th, td {
+            padding: 8px;
+            border: 1px solid #ddd;
+            text-align: left;
+        }
+        th {
+            background-color: #f4f4f4;
+        }
+        tr:nth-child(even) {
+            background-color: #f9f9f9;
+        }
+        .pagination {
+            margin-top: 20px;
+        }
+    </style>
+</head>
+<body>
+    <h2>Safer Data Listings</h2>
+
+    <form method="get">
+        <input type="text" name="q" placeholder="Search anything..." value="{{ query }}">
+        <input type="number" name="dot_from" placeholder="DOT from" value="{{ dot_from }}">
+        <input type="number" name="dot_to" placeholder="DOT to" value="{{ dot_to }}">
+        <button type="submit">Search</button>
+        <a href="{% url 'safer_data' %}">Reset</a>
+    </form>
+
+    <table>
+        <thead>
+            <tr>
+                <th>ID</th>
+                <th>DOT Number</th>
+                <th>Legal Name</th>
+                <th>Physical Address</th>
+                <th>Zipcode</th>
+                <th>Mailing Code</th>
+                <th>Phone</th>
+                <th>Operating Status</th>
+                <th>Power Units</th>
+                <th>Drivers</th>
+                <th>Date Filed</th>
+                <th>Fetched At</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for row in data %}
+            <tr>
+                <td>{{ row.id }}</td>
+                <td>{{ row.dot_number }}</td>
+                <td>{{ row.legal_name }}</td>
+                <td>{{ row.physical_address }}</td>
+                <td>{{ row.zipcode }}</td>
+                <td>{{ row.mailing_code }}</td>
+                <td>{{ row.phone }}</td>
+                <td>{{ row.operating_status }}</td>
+                <td>{{ row.power_units }}</td>
+                <td>{{ row.drivers }}</td>
+                <td>{{ row.date_filed }}</td>
+                <td>{{ row.fetched_at }}</td>
+            </tr>
+            {% empty %}
+            <tr><td colspan="12">No results found</td></tr>
+            {% endfor %}
+        </tbody>
+    </table>
+
+    <div class="pagination">
+  {% if data.has_previous %}
+    <a href="?page={{ data.previous_page_number }}{% if query %}&q={{ query }}{% endif %}{% if dot_from %}&dot_from={{ dot_from }}{% endif %}{% if dot_to %}&dot_to={{ dot_to }}{% endif %}">Previous</a>
+  {% endif %}
+
+  Page {{ data.number }} of {{ data.paginator.num_pages }}
+
+  {% if data.has_next %}
+    <a href="?page={{ data.next_page_number }}{% if query %}&q={{ query }}{% endif %}{% if dot_from %}&dot_from={{ dot_from }}{% endif %}{% if dot_to %}&dot_to={{ dot_to }}{% endif %}">Next</a>
+  {% endif %}
+</div>
+</body>
+</html>
