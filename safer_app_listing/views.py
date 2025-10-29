@@ -1,13 +1,13 @@
 import csv
-
-from .models import SaferData
 from django.db.models import Q
 from django.shortcuts import render
 from django.http import HttpResponse
 from django.core.paginator import Paginator
+from .models import SaferData
 
 
 def build_filtered_queryset(request, base_queryset=None):
+    """Reusable filtering logic for search and CSV export."""
     if base_queryset is None:
         base_queryset = SaferData.objects.all()
 
@@ -15,24 +15,30 @@ def build_filtered_queryset(request, base_queryset=None):
     dot_from = request.GET.get('dot_from')
     dot_to = request.GET.get('dot_to')
 
+    # Text or numeric search
     if query:
         filters = Q()
-
-        # Numeric queries
         if query.isdigit():
-            filters |= Q(id=int(query)) | Q(dot_number=int(query)) | Q(zipcode=int(query)) | Q(phone=int(query))
-        else:
-            # Text-based partial matches
             filters |= (
-                    Q(legal_name__icontains=query)
-                    | Q(physical_address__icontains=query)
-                    | Q(mailing_code__icontains=query)
-                    | Q(operating_status__icontains=query)
+                Q(id=int(query))
+                | Q(dot_number=int(query))
+                | Q(zipcode=int(query))
+                | Q(phone=int(query))
             )
-
+        else:
+            filters |= (
+                Q(legal_name__icontains=query)
+                | Q(physical_address__icontains=query)
+                | Q(mailing_code__icontains=query)
+                | Q(operating_status__icontains=query)
+                | Q(power_units__icontains=query)
+                | Q(drivers__icontains=query)
+                | Q(date_filed__icontains=query)
+                | Q(fetched_at__icontains=query)
+            )
         base_queryset = base_queryset.filter(filters)
 
-    # DOT number range filters
+    # DOT range filter
     if dot_from and dot_to:
         base_queryset = base_queryset.filter(dot_number__range=[dot_from, dot_to])
     elif dot_from:
@@ -44,7 +50,9 @@ def build_filtered_queryset(request, base_queryset=None):
 
 
 def safer_data_view(request):
+    """Main view: shows filtered data with pagination."""
     data = build_filtered_queryset(request)
+
     paginator = Paginator(data, 50)
     page_number = request.GET.get('page')
     page_obj = paginator.get_page(page_number)
@@ -59,6 +67,7 @@ def safer_data_view(request):
 
 
 def download_csv(request):
+    """Allows downloading the filtered data as a CSV file."""
     safer_data = build_filtered_queryset(request)
 
     response = HttpResponse(content_type='text/csv')

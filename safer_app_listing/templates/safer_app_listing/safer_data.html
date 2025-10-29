@@ -9,12 +9,8 @@
             margin: 30px;
             background-color: #fafafa;
         }
-        h2 {
-            color: #333;
-        }
-        form {
-            margin-bottom: 20px;
-        }
+        h2 { color: #333; }
+        form { margin-bottom: 20px; }
         input[type="text"], input[type="number"] {
             padding: 6px;
             margin-right: 8px;
@@ -29,17 +25,13 @@
             border-radius: 4px;
             cursor: pointer;
         }
-        button:hover {
-            background-color: #0056b3;
-        }
+        button:hover { background-color: #0056b3; }
         a {
             margin-left: 8px;
             text-decoration: none;
             color: #007bff;
         }
-        a:hover {
-            text-decoration: underline;
-        }
+        a:hover { text-decoration: underline; }
         table {
             border-collapse: collapse;
             width: 100%;
@@ -50,15 +42,9 @@
             border: 1px solid #ddd;
             text-align: left;
         }
-        th {
-            background-color: #f4f4f4;
-        }
-        tr:nth-child(even) {
-            background-color: #f9f9f9;
-        }
-        .pagination {
-            margin-top: 20px;
-        }
+        th { background-color: #f4f4f4; }
+        tr:nth-child(even) { background-color: #f9f9f9; }
+        .pagination { margin-top: 20px; }
     </style>
 </head>
 <body>
@@ -73,11 +59,11 @@
     </form>
 
     <div style="margin-bottom: 15px;">
-    <a href="{% url 'download_csv' %}?q={{ request.GET.q }}&dot_from={{ request.GET.dot_from }}&dot_to={{ request.GET.dot_to }}"
-       style="background:green; color:white; padding:8px 12px; text-decoration:none; border-radius:5px;">
-        Download CSV
-    </a>
-</div>
+        <a href="{% url 'download_csv' %}?q={{ request.GET.q }}&dot_from={{ request.GET.dot_from }}&dot_to={{ request.GET.dot_to }}"
+           style="background:green; color:white; padding:8px 12px; text-decoration:none; border-radius:5px;">
+            Download CSV
+        </a>
+    </div>
 
     <table>
         <thead>
@@ -119,15 +105,13 @@
     </table>
 
     <div class="pagination">
-  {% if data.has_previous %}
-    <a href="?page={{ data.previous_page_number }}{% if query %}&q={{ query }}{% endif %}{% if dot_from %}&dot_from={{ dot_from }}{% endif %}{% if dot_to %}&dot_to={{ dot_to }}{% endif %}">Previous</a>
-  {% endif %}
-
-  Page {{ data.number }} of {{ data.paginator.num_pages }}
-
-  {% if data.has_next %}
-    <a href="?page={{ data.next_page_number }}{% if query %}&q={{ query }}{% endif %}{% if dot_from %}&dot_from={{ dot_from }}{% endif %}{% if dot_to %}&dot_to={{ dot_to }}{% endif %}">Next</a>
-  {% endif %}
-</div>
+        {% if data.has_previous %}
+            <a href="?page={{ data.previous_page_number }}{% if query %}&q={{ query }}{% endif %}{% if dot_from %}&dot_from={{ dot_from }}{% endif %}{% if dot_to %}&dot_to={{ dot_to }}{% endif %}">Previous</a>
+        {% endif %}
+        Page {{ data.number }} of {{ data.paginator.num_pages }}
+        {% if data.has_next %}
+            <a href="?page={{ data.next_page_number }}{% if query %}&q={{ query }}{% endif %}{% if dot_from %}&dot_from={{ dot_from }}{% endif %}{% if dot_to %}&dot_to={{ dot_to }}{% endif %}">Next</a>
+        {% endif %}
+    </div>
 </body>
 </html>
