@@ -4,117 +4,487 @@
     <meta charset="UTF-8">
     <title>Safer Data Listings</title>
     <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
         body {
-            font-family: Arial, sans-serif;
-            margin: 30px;
-            background-color: #fafafa;
+            font-family: 'Helvetica Neue', Arial, sans-serif;
+            background-color: #f5f5f5;
+            color: #333;
         }
-        h2 { color: #333; }
-        form { margin-bottom: 20px; }
-        input[type="text"], input[type="number"] {
-            padding: 6px;
-            margin-right: 8px;
-            border: 1px solid #ccc;
+
+        .container {
+            margin: 30px auto;
+            max-width: 1400px;
+            padding: 0 30px;
+        }
+
+        h2 {
+            color: #003366;
+            margin-bottom: 25px;
+            font-weight: 600;
+            font-size: 24px;
+            text-align: center;
+        }
+
+        form {
+            margin-bottom: 25px;
+            background: white;
+            padding: 20px;
             border-radius: 4px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+            border-left: 4px solid #003366;
         }
+
+        input[type="text"], input[type="number"] {
+            padding: 10px 15px;
+            margin-right: 10px;
+            border: 1px solid #a9a9a9;
+            border-radius: 4px;
+            font-size: 14px;
+            transition: all 0.3s ease;
+        }
+
+        input[type="text"]:focus, input[type="number"]:focus {
+            outline: none;
+            border-color: #003366;
+            box-shadow: 0 0 0 2px rgba(0, 51, 102, 0.2);
+        }
+
         button {
-            padding: 6px 10px;
+            padding: 10px 20px;
             border: none;
-            background-color: #007bff;
+            background-color: #003366;
             color: white;
             border-radius: 4px;
             cursor: pointer;
+            font-weight: 500;
+            transition: all 0.3s ease;
         }
-        button:hover { background-color: #0056b3; }
+
+        button:hover {
+            background-color: #002244;
+        }
+
         a {
-            margin-left: 8px;
             text-decoration: none;
-            color: #007bff;
+            color: #0056b3;
+            font-weight: 500;
+            transition: all 0.3s ease;
         }
-        a:hover { text-decoration: underline; }
+
+        a:hover {
+            color: #003366;
+            text-decoration: underline;
+        }
+
+        .table-container {
+            display: flex;
+            justify-content: center;
+            margin-bottom: 10px;
+        }
+
         table {
             border-collapse: collapse;
-            width: 100%;
+            width: 90%;
+            max-width: 1000px;
             background: white;
+            border-radius: 4px;
+            overflow: hidden;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
         }
+
         th, td {
-            padding: 8px;
-            border: 1px solid #ddd;
+            padding: 12px 15px;
             text-align: left;
+            border-bottom: 1px solid #e0e0e0;
         }
-        th { background-color: #f4f4f4; }
-        tr:nth-child(even) { background-color: #f9f9f9; }
-        .pagination { margin-top: 20px; }
+
+        th {
+            background-color: #003366;
+            color: white;
+            font-weight: 600;
+            font-size: 14px;
+        }
+
+        tr:last-child td {
+            border-bottom: none;
+        }
+
+        tr {
+            cursor: pointer;
+            transition: background-color 0.2s ease;
+        }
+
+        tr:hover {
+            background-color: #f5f9ff;
+        }
+
+        .pagination {
+            margin-top: 25px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .pagination a {
+            padding: 8px 16px;
+            background: white;
+            border: 1px solid #a9a9a9;
+            border-radius: 4px;
+            color: #003366;
+            transition: all 0.3s ease;
+        }
+
+        .pagination a:hover {
+            background: #003366;
+            color: white;
+            text-decoration: none;
+        }
+
+        /* FMCSA-style Navigation Bar */
+        nav {
+            background-color: #003366;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+            position: sticky;
+            top: 0;
+            z-index: 1000;
+        }
+
+        .nav-container {
+            max-width: 1400px;
+            margin: 0 auto;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 0 30px;
+        }
+
+        .logo {
+            padding: 15px 0;
+            font-size: 22px;
+            font-weight: 700;
+            color: white;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .logo::before {
+            content: "🚛";
+            font-size: 24px;
+        }
+
+        .nav-links {
+            display: flex;
+            list-style: none;
+            margin: 0;
+            padding: 0;
+        }
+
+        .nav-links li {
+            position: relative;
+        }
+
+        .nav-links a {
+            display: block;
+            padding: 20px 18px;
+            color: white;
+            text-decoration: none;
+            font-weight: 500;
+            font-size: 15px;
+            transition: all 0.3s ease;
+            border-bottom: 3px solid transparent;
+        }
+
+        .nav-links a:hover {
+            background-color: #002244;
+            text-decoration: none;
+            border-bottom: 3px solid #e31e24;
+        }
+
+        .nav-links a.active {
+            background-color: #002244;
+            border-bottom: 3px solid #e31e24;
+        }
+
+        .download-btn {
+            background-color: #e31e24;
+            color: white;
+            padding: 10px 20px;
+            border-radius: 4px;
+            display: inline-block;
+            transition: all 0.3s ease;
+            font-weight: 500;
+        }
+
+        .download-btn:hover {
+            background-color: #c5181d;
+            transform: translateY(-1px);
+            text-decoration: none;
+            color: white;
+        }
+
+        .no-results {
+            text-align: center;
+            padding: 40px;
+            color: #666;
+            font-style: italic;
+        }
+
+        .fmcsa-banner {
+            background-color: #e31e24;
+            color: white;
+            padding: 8px 0;
+            text-align: center;
+            font-size: 14px;
+        }
+
+        .fmcsa-banner a {
+            color: white;
+            text-decoration: underline;
+        }
+
+        .fmcsa-banner a:hover {
+            text-decoration: none;
+        }
+
+        /* Modal Styles */
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 2000;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            overflow: auto;
+            background-color: rgba(0, 0, 0, 0.5);
+        }
+
+        .modal-content {
+            background-color: white;
+            margin: 5% auto;
+            padding: 0;
+            border-radius: 4px;
+            width: 80%;
+            max-width: 800px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.3);
+            animation: modalopen 0.3s;
+        }
+
+        @keyframes modalopen {
+            from {opacity: 0; transform: translateY(-20px);}
+            to {opacity: 1; transform: translateY(0);}
+        }
+
+        .modal-header {
+            background-color: #003366;
+            color: white;
+            padding: 15px 20px;
+            border-radius: 4px 4px 0 0;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .modal-header h3 {
+            margin: 0;
+            font-size: 18px;
+        }
+
+        .close {
+            color: white;
+            font-size: 28px;
+            font-weight: bold;
+            cursor: pointer;
+            line-height: 20px;
+        }
+
+        .close:hover {
+            color: #ccc;
+        }
+
+        .modal-body {
+            padding: 20px;
+        }
+
+        .detail-row {
+            display: flex;
+            padding: 10px 0;
+            border-bottom: 1px solid #e0e0e0;
+        }
+
+        .detail-row:last-child {
+            border-bottom: none;
+        }
+
+        .detail-label {
+            font-weight: 600;
+            width: 180px;
+            color: #003366;
+        }
+
+        .detail-value {
+            flex: 1;
+        }
+
+        .view-more-hint {
+            color: #666;
+            font-style: italic;
+            font-size: 12px;
+            margin-top: 5px;
+            text-align: center;
+        }
     </style>
 </head>
 <body>
-    <h2>Safer Data Listings</h2>
 
-    <form method="get" style="display: flex; align-items: center; justify-content: space-between; gap: 10px; margin-bottom: 15px;">
-        <div style="display: flex; align-items: center; gap: 10px;">
-            <input type="text" name="q" placeholder="Search anything..." value="{{ query }}">
-            <input type="number" name="dot_from" placeholder="DOT from" value="{{ dot_from }}">
-            <input type="number" name="dot_to" placeholder="DOT to" value="{{ dot_to }}">
-            <button type="submit">Search</button>
-            <a href="{% url 'safer_data' %}">Reset</a>
+    <!-- FMCSA-style Navigation Bar -->
+    <nav>
+        <div class="nav-container">
+            <div class="logo">Safer Data</div>
+            <ul class="nav-links">
+                <li><a href="#">Home</a></li>
+                <li><a href="{% url 'safer_data' %}" class="active">Data</a></li>
+                <li><a href="#">Contact Us</a></li>
+                <li><a href="#">About</a></li>
+            </ul>
+        </div>
+    </nav>
+
+    <div class="container">
+        <h2>Safer Data Listings</h2>
+
+        <form method="get" style="display: flex; align-items: center; justify-content: space-between; gap: 15px;">
+            <div style="display: flex; align-items: center; gap: 10px; flex-wrap: wrap;">
+                <input type="text" name="q" placeholder="Search anything..." value="{{ query }}">
+                <input type="number" name="dot_from" placeholder="DOT from" value="{{ dot_from }}">
+                <input type="number" name="dot_to" placeholder="DOT to" value="{{ dot_to }}">
+                <button type="submit">Search</button>
+                <a href="{% url 'safer_data' %}">Reset</a>
+            </div>
+
+            <a href="{% url 'download_csv' %}?q={{ request.GET.q }}&dot_from={{ request.GET.dot_from }}&dot_to={{ request.GET.dot_to }}"
+               class="download-btn">
+                Download CSV
+            </a>
+        </form>
+
+        <div class="table-container">
+            <table>
+                <thead>
+                    <tr>
+                        <th>DOT Number</th>
+                        <th>Legal Name</th>
+                        <th>Physical Address</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for row in data %}
+                    <tr onclick="openModal('modal-{{ forloop.counter0 }}')">
+                        <td>{{ row.dot_number }}</td>
+                        <td>{{ row.legal_name }}</td>
+                        <td>{{ row.physical_address }}</td>
+                    </tr>
+                    {% empty %}
+                    <tr><td colspan="3" class="no-results">No results found</td></tr>
+                    {% endfor %}
+                </tbody>
+            </table>
         </div>
 
-        <a href="{% url 'download_csv' %}?q={{ request.GET.q }}&dot_from={{ request.GET.dot_from }}&dot_to={{ request.GET.dot_to }}"
-           style="background:green; color:white; padding:8px 12px; text-decoration:none; border-radius:5px;">
-            Download CSV
-        </a>
+        <div class="view-more-hint">Click on any row to view complete details</div>
 
-    </form>
-
-
-
-    <table>
-        <thead>
-            <tr>
-                <th>DOT Number</th>
-                <th>Legal Name</th>
-                <th>Physical Address</th>
-                <th>Zipcode</th>
-                <th>Mailing Code</th>
-                <th>Phone</th>
-                <th>Operating Status</th>
-                <th>Power Units</th>
-                <th>Drivers</th>
-                <th>Date Filed</th>
-                <th>Email</th>
-                <th>Fetched At</th>
-            </tr>
-        </thead>
-        <tbody>
-            {% for row in data %}
-            <tr>
-                <td>{{ row.dot_number }}</td>
-                <td>{{ row.legal_name }}</td>
-                <td>{{ row.physical_address }}</td>
-                <td>{{ row.zipcode }}</td>
-                <td>{{ row.mailing_code }}</td>
-                <td>{{ row.phone }}</td>
-                <td>{{ row.operating_status }}</td>
-                <td>{{ row.power_units }}</td>
-                <td>{{ row.drivers }}</td>
-                <td>{{ row.date_filed }}</td>
-                <td>{{ row.email }}</td>
-                <td>{{ row.fetched_at }}</td>
-            </tr>
-            {% empty %}
-            <tr><td colspan="12">No results found</td></tr>
-            {% endfor %}
-        </tbody>
-    </table>
-
-    <div class="pagination">
-        {% if data.has_previous %}
-            <a href="?page={{ data.previous_page_number }}{% if query %}&q={{ query }}{% endif %}{% if dot_from %}&dot_from={{ dot_from }}{% endif %}{% if dot_to %}&dot_to={{ dot_to }}{% endif %}">Previous</a>
-        {% endif %}
-        Page {{ data.number }} of {{ data.paginator.num_pages }}
-        {% if data.has_next %}
-            <a href="?page={{ data.next_page_number }}{% if query %}&q={{ query }}{% endif %}{% if dot_from %}&dot_from={{ dot_from }}{% endif %}{% if dot_to %}&dot_to={{ dot_to }}{% endif %}">Next</a>
-        {% endif %}
+        <div class="pagination">
+            {% if data.has_previous %}
+                <a href="?page={{ data.previous_page_number }}{% if query %}&q={{ query }}{% endif %}{% if dot_from %}&dot_from={{ dot_from }}{% endif %}{% if dot_to %}&dot_to={{ dot_to }}{% endif %}">← Previous</a>
+            {% endif %}
+            <span style="color: #666;">Page {{ data.number }} of {{ data.paginator.num_pages }}</span>
+            {% if data.has_next %}
+                <a href="?page={{ data.next_page_number }}{% if query %}&q={{ query }}{% endif %}{% if dot_from %}&dot_from={{ dot_from }}{% endif %}{% if dot_to %}&dot_to={{ dot_to }}{% endif %}">Next →</a>
+            {% endif %}
+        </div>
     </div>
+
+    <!-- Modals for each row -->
+    {% for row in data %}
+    <div id="modal-{{ forloop.counter0 }}" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>{{ row.legal_name }} - DOT Number: {{ row.dot_number }}</h3>
+                <span class="close" onclick="closeModal('modal-{{ forloop.counter0 }}')">&times;</span>
+            </div>
+            <div class="modal-body">
+                <div class="detail-row">
+                    <div class="detail-label">DOT Number:</div>
+                    <div class="detail-value">{{ row.dot_number }}</div>
+                </div>
+                <div class="detail-row">
+                    <div class="detail-label">Legal Name:</div>
+                    <div class="detail-value">{{ row.legal_name }}</div>
+                </div>
+                <div class="detail-row">
+                    <div class="detail-label">Physical Address:</div>
+                    <div class="detail-value">{{ row.physical_address }}</div>
+                </div>
+                <div class="detail-row">
+                    <div class="detail-label">Zipcode:</div>
+                    <div class="detail-value">{{ row.zipcode }}</div>
+                </div>
+                <div class="detail-row">
+                    <div class="detail-label">Mailing Code:</div>
+                    <div class="detail-value">{{ row.mailing_code }}</div>
+                </div>
+                <div class="detail-row">
+                    <div class="detail-label">Phone:</div>
+                    <div class="detail-value">{{ row.phone }}</div>
+                </div>
+                <div class="detail-row">
+                    <div class="detail-label">Operating Status:</div>
+                    <div class="detail-value">{{ row.operating_status }}</div>
+                </div>
+                <div class="detail-row">
+                    <div class="detail-label">Power Units:</div>
+                    <div class="detail-value">{{ row.power_units }}</div>
+                </div>
+                <div class="detail-row">
+                    <div class="detail-label">Drivers:</div>
+                    <div class="detail-value">{{ row.drivers }}</div>
+                </div>
+                <div class="detail-row">
+                    <div class="detail-label">Date Filed:</div>
+                    <div class="detail-value">{{ row.date_filed }}</div>
+                </div>
+                <div class="detail-row">
+                    <div class="detail-label">Email:</div>
+                    <div class="detail-value">{{ row.email }}</div>
+                </div>
+
+            </div>
+        </div>
+    </div>
+    {% endfor %}
+
+    <script>
+        function openModal(modalId) {
+            document.getElementById(modalId).style.display = "block";
+        }
+
+        function closeModal(modalId) {
+            document.getElementById(modalId).style.display = "none";
+        }
+
+        // Close modal when clicking outside of it
+        window.onclick = function(event) {
+            if (event.target.classList.contains('modal')) {
+                event.target.style.display = "none";
+            }
+        }
+    </script>
 </body>
 </html>
