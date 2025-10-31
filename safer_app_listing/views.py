@@ -77,14 +77,13 @@ def download_csv(request):
     writer.writerow([
         'dot_number', 'legal_name', 'physical_address', 'zipcode',
         'mailing_code', 'phone', 'operating_status', 'power_units',
-        'drivers', 'date_filed', 'email', 'fetched_at'
+        'drivers', 'date_filed', 'email'
     ])
 
     for data in safer_data:
-        writer.writerow([
-            data.id, data.dot_number, data.legal_name, data.physical_address,
+        writer.writerow([data.dot_number, data.legal_name, data.physical_address,
             data.zipcode, data.mailing_code, data.phone, data.operating_status,
-            data.power_units, data.drivers, data.date_filed, data.fetched_at
+            data.power_units, data.drivers, data.date_filed, data.email
         ])
 
     return response
