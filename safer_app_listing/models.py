@@ -2,7 +2,6 @@ from django.db import models
 
 
 class SaferData(models.Model):
-    id = models.IntegerField(primary_key=True)
     dot_number = models.TextField(null=True, blank=True)
     legal_name = models.TextField(null=True, blank=True)
     physical_address = models.TextField(null=True, blank=True)
@@ -13,6 +12,7 @@ class SaferData(models.Model):
     power_units = models.TextField(null=True, blank=True)
     drivers = models.TextField(null=True, blank=True)
     date_filed = models.TextField(null=True, blank=True)
+    email = models.TextField(null=True, blank=True)
     fetched_at = models.TextField(null=True, blank=True)
 
     class Meta:

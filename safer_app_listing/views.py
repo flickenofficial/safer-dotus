@@ -20,8 +20,7 @@ def build_filtered_queryset(request, base_queryset=None):
         filters = Q()
         if query.isdigit():
             filters |= (
-                Q(id=int(query))
-                | Q(dot_number=int(query))
+                Q(dot_number=int(query))
                 | Q(zipcode=int(query))
                 | Q(phone=int(query))
             )
@@ -34,6 +33,7 @@ def build_filtered_queryset(request, base_queryset=None):
                 | Q(power_units__icontains=query)
                 | Q(drivers__icontains=query)
                 | Q(date_filed__icontains=query)
+                | Q(email__icontains=query)
                 | Q(fetched_at__icontains=query)
             )
         base_queryset = base_queryset.filter(filters)
@@ -75,9 +75,9 @@ def download_csv(request):
     writer = csv.writer(response)
 
     writer.writerow([
-        'id', 'dot_number', 'legal_name', 'physical_address', 'zipcode',
+        'dot_number', 'legal_name', 'physical_address', 'zipcode',
         'mailing_code', 'phone', 'operating_status', 'power_units',
-        'drivers', 'date_filed', 'fetched_at'
+        'drivers', 'date_filed', 'email', 'fetched_at'
     ])
 
     for data in safer_data:
