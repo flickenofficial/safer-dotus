@@ -50,25 +50,27 @@
 <body>
     <h2>Safer Data Listings</h2>
 
-    <form method="get">
-        <input type="text" name="q" placeholder="Search anything..." value="{{ query }}">
-        <input type="number" name="dot_from" placeholder="DOT from" value="{{ dot_from }}">
-        <input type="number" name="dot_to" placeholder="DOT to" value="{{ dot_to }}">
-        <button type="submit">Search</button>
-        <a href="{% url 'safer_data' %}">Reset</a>
-    </form>
+    <form method="get" style="display: flex; align-items: center; justify-content: space-between; gap: 10px; margin-bottom: 15px;">
+        <div style="display: flex; align-items: center; gap: 10px;">
+            <input type="text" name="q" placeholder="Search anything..." value="{{ query }}">
+            <input type="number" name="dot_from" placeholder="DOT from" value="{{ dot_from }}">
+            <input type="number" name="dot_to" placeholder="DOT to" value="{{ dot_to }}">
+            <button type="submit">Search</button>
+            <a href="{% url 'safer_data' %}">Reset</a>
+        </div>
 
-    <div style="margin-bottom: 15px;">
         <a href="{% url 'download_csv' %}?q={{ request.GET.q }}&dot_from={{ request.GET.dot_from }}&dot_to={{ request.GET.dot_to }}"
            style="background:green; color:white; padding:8px 12px; text-decoration:none; border-radius:5px;">
             Download CSV
         </a>
-    </div>
+
+    </form>
+
+
 
     <table>
         <thead>
             <tr>
-                <th>ID</th>
                 <th>DOT Number</th>
                 <th>Legal Name</th>
                 <th>Physical Address</th>
@@ -79,13 +81,13 @@
                 <th>Power Units</th>
                 <th>Drivers</th>
                 <th>Date Filed</th>
+                <th>Email</th>
                 <th>Fetched At</th>
             </tr>
         </thead>
         <tbody>
             {% for row in data %}
             <tr>
-                <td>{{ row.id }}</td>
                 <td>{{ row.dot_number }}</td>
                 <td>{{ row.legal_name }}</td>
                 <td>{{ row.physical_address }}</td>
@@ -96,6 +98,7 @@
                 <td>{{ row.power_units }}</td>
                 <td>{{ row.drivers }}</td>
                 <td>{{ row.date_filed }}</td>
+                <td>{{ row.email }}</td>
                 <td>{{ row.fetched_at }}</td>
             </tr>
             {% empty %}
