@@ -96,13 +96,15 @@ def download_csv(request):
 
 def signup_view(request):
     if request.method == 'POST':
-        form = UserCreationForm(request.POST)
+        form = SignUpForm(request.POST)
         if form.is_valid():
             user = form.save()
-            login(request, user)  # Automatically log in after signup
-            return redirect('safer_data')
+            login(request, user)
+            return redirect("login")
+        else:
+            return render(request, "auth/signup.html", {"form": form})
     else:
-        form = UserCreationForm()
+        form = SignUpForm()
     return render(request, 'auth/signup.html', {'form': form})
 
 def login_view(request):
