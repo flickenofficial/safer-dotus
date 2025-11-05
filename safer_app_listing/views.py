@@ -1,9 +1,15 @@
 import csv
+
 from django.db.models import Q
-from django.shortcuts import render
 from django.http import HttpResponse
 from django.core.paginator import Paginator
 from .models import SaferData
+from django.contrib import messages
+from django.shortcuts import redirect, render
+from django.contrib.auth.forms import UserCreationForm
+from django.contrib.auth.decorators import login_required
+from django.contrib.auth import authenticate, login, logout
+from .forms import SignUpForm
 
 
 def build_filtered_queryset(request, base_queryset=None):
@@ -48,7 +54,7 @@ def build_filtered_queryset(request, base_queryset=None):
 
     return base_queryset
 
-
+@login_required
 def safer_data_view(request):
     """Main view: shows filtered data with pagination."""
     data = build_filtered_queryset(request)
@@ -87,3 +93,33 @@ def download_csv(request):
         ])
 
     return response
+
+def signup_view(request):
+    if request.method == 'POST':
+        form = SignUpForm(request.POST)
+        if form.is_valid():
+            user = form.save()
+            login(request, user)
+            return redirect("login")
+        else:
+            return render(request, "auth/signup.html", {"form": form})
+    else:
+        form = SignUpForm()
+    return render(request, 'auth/signup.html', {'form': form})
+
+def login_view(request):
+    if request.method == 'POST':
+        username = request.POST['username']
+        password = request.POST['password']
+        user = authenticate(request, username=username, password=password)
+        if user is not None:
+            login(request, user)
+            return redirect('safer_data')
+        else:
+            messages.error(request, 'Invalid username or password')
+    return render(request, 'auth/login.html')
+
+
+def logout_view(request):
+    logout(request)
+    return redirect('login')
