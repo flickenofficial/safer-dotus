@@ -3,7 +3,9 @@
 *.pot
 *.pyc
 __pycache__/
+migrations/
 sqlite3.db
+*.db*
 media/
 staticfiles/
 *.py[cod]
