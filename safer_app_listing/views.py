@@ -3,8 +3,7 @@ from django.db.models import Q
 from django.shortcuts import render
 from django.http import HttpResponse
 from django.core.paginator import Paginator
-from .models import SaferData
-
+from safer_scraper.models import SaferData
 
 def build_filtered_queryset(request, base_queryset=None):
     """Reusable filtering logic for search and CSV export."""

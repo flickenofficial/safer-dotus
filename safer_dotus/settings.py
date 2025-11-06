@@ -37,7 +37,8 @@ INSTALLED_APPS = [
     "django.contrib.sessions",
     "django.contrib.messages",
     "django.contrib.staticfiles",
-    "safer_app_listing"
+    "safer_app_listing",
+    "safer_scraper"
 ]
 
 MIDDLEWARE = [
