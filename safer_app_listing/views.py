@@ -8,6 +8,7 @@ from django.core.management import call_command
 from safer_scraper.models.scraper_job import ScraperJob
 from .forms import ScraperStartForm
 from django.contrib import messages
+from threading import Thread
 
 
 def build_filtered_queryset(request, base_queryset=None):
@@ -19,30 +20,28 @@ def build_filtered_queryset(request, base_queryset=None):
     dot_from = request.GET.get('dot_from')
     dot_to = request.GET.get('dot_to')
 
-    # Text or numeric search
     if query:
         filters = Q()
         if query.isdigit():
             filters |= (
-                    Q(dot_number=int(query))
-                    | Q(zipcode=int(query))
-                    | Q(phone=int(query))
+                Q(dot_number=int(query))
+                | Q(zipcode=int(query))
+                | Q(phone=int(query))
             )
         else:
             filters |= (
-                    Q(legal_name__icontains=query)
-                    | Q(physical_address__icontains=query)
-                    | Q(mailing_code__icontains=query)
-                    | Q(operating_status__icontains=query)
-                    | Q(power_units__icontains=query)
-                    | Q(drivers__icontains=query)
-                    | Q(date_filed__icontains=query)
-                    | Q(email__icontains=query)
-                    | Q(fetched_at__icontains=query)
+                Q(legal_name__icontains=query)
+                | Q(physical_address__icontains=query)
+                | Q(mailing_code__icontains=query)
+                | Q(operating_status__icontains=query)
+                | Q(power_units__icontains=query)
+                | Q(drivers__icontains=query)
+                | Q(date_filed__icontains=query)
+                | Q(email__icontains=query)
+                | Q(fetched_at__icontains=query)
             )
         base_queryset = base_queryset.filter(filters)
 
-    # DOT range filter
     if dot_from and dot_to:
         base_queryset = base_queryset.filter(dot_number__range=[dot_from, dot_to])
     elif dot_from:
@@ -54,9 +53,7 @@ def build_filtered_queryset(request, base_queryset=None):
 
 
 def safer_data_view(request):
-    """Main view: shows filtered data with pagination."""
     data = build_filtered_queryset(request)
-
     paginator = Paginator(data, 50)
     page_number = request.GET.get('page')
     page_obj = paginator.get_page(page_number)
@@ -71,9 +68,7 @@ def safer_data_view(request):
 
 
 def download_csv(request):
-    """Allows downloading the filtered data as a CSV file."""
     safer_data = build_filtered_queryset(request)
-
     response = HttpResponse(content_type='text/csv')
     response['Content-Disposition'] = 'attachment; filename="safer_data.csv"'
     writer = csv.writer(response)
@@ -85,56 +80,52 @@ def download_csv(request):
     ])
 
     for data in safer_data:
-        writer.writerow([data.dot_number, data.legal_name, data.physical_address,
-                         data.zipcode, data.mailing_code, data.phone, data.operating_status,
-                         data.power_units, data.drivers, data.date_filed, data.email
-                         ])
+        writer.writerow([
+            data.dot_number, data.legal_name, data.physical_address,
+            data.zipcode, data.mailing_code, data.phone, data.operating_status,
+            data.power_units, data.drivers, data.date_filed, data.email
+        ])
 
     return response
 
 
 def run_scraper_background(job_id, start_id, hours):
+    """Run scraper in background thread for non-blocking execution."""
     job = ScraperJob.objects.get(id=job_id)
 
     try:
         job.mark_as_running()
 
-        # Run actual scraper here
+        # Run actual scraper
         call_command("run_scraper", start_id=start_id, hours=hours)
 
         job.mark_as_completed()
-
     except Exception as e:
         job.mark_as_failed(str(e))
 
 
 def start_scraper_view(request):
+    """Start scraper page: submit form and redirect immediately to status page."""
     if request.method == 'POST':
         form = ScraperStartForm(request.POST)
         if form.is_valid():
             start_id = form.cleaned_data['start_id']
             hours = form.cleaned_data['hours']
 
+            # Create job in DB
             job = ScraperJob.objects.create(
                 start_id=start_id,
                 hours_to_run=hours,
                 status='pending'
             )
 
-            # ✅ Mark as running immediately
-            job.mark_as_running()
+            # Run scraper in background thread
+            Thread(target=run_scraper_background, args=(job.id, start_id, hours)).start()
 
-            try:
-                call_command('run_scraper', start_id=start_id, hours=hours)
-                job.mark_as_completed()
-                messages.success(request, 'Scraper completed successfully.')
-
-            except Exception as e:
-                job.mark_as_failed(str(e))
-                messages.error(request, f'Scraper failed: {e}')
-
+            messages.success(request, 'Scraper started successfully.')
             return redirect('scraper_status')
-
+        else:
+            messages.error(request, 'Please provide valid inputs.')
     else:
         form = ScraperStartForm()
 
@@ -142,5 +133,6 @@ def start_scraper_view(request):
 
 
 def scraper_status_view(request):
+    """Display all scraper jobs and their statuses."""
     jobs = ScraperJob.objects.all().order_by("-id")
     return render(request, "scraper/scraper_status.html", {"jobs": jobs})
