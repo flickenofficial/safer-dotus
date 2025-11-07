@@ -1,0 +1,1 @@
+default_app_config = 'safer_scraper.apps.SaferScraperConfig'
