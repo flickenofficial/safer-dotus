@@ -1,9 +1,14 @@
 import csv
 from django.db.models import Q
-from django.shortcuts import render
+from django.shortcuts import render, redirect
 from django.http import HttpResponse
 from django.core.paginator import Paginator
 from safer_scraper.models import SaferData
+from django.core.management import call_command
+from safer_scraper.models.scraper_job import ScraperJob
+from .forms import ScraperStartForm
+from django.contrib import messages
+
 
 def build_filtered_queryset(request, base_queryset=None):
     """Reusable filtering logic for search and CSV export."""
@@ -19,21 +24,21 @@ def build_filtered_queryset(request, base_queryset=None):
         filters = Q()
         if query.isdigit():
             filters |= (
-                Q(dot_number=int(query))
-                | Q(zipcode=int(query))
-                | Q(phone=int(query))
+                    Q(dot_number=int(query))
+                    | Q(zipcode=int(query))
+                    | Q(phone=int(query))
             )
         else:
             filters |= (
-                Q(legal_name__icontains=query)
-                | Q(physical_address__icontains=query)
-                | Q(mailing_code__icontains=query)
-                | Q(operating_status__icontains=query)
-                | Q(power_units__icontains=query)
-                | Q(drivers__icontains=query)
-                | Q(date_filed__icontains=query)
-                | Q(email__icontains=query)
-                | Q(fetched_at__icontains=query)
+                    Q(legal_name__icontains=query)
+                    | Q(physical_address__icontains=query)
+                    | Q(mailing_code__icontains=query)
+                    | Q(operating_status__icontains=query)
+                    | Q(power_units__icontains=query)
+                    | Q(drivers__icontains=query)
+                    | Q(date_filed__icontains=query)
+                    | Q(email__icontains=query)
+                    | Q(fetched_at__icontains=query)
             )
         base_queryset = base_queryset.filter(filters)
 
@@ -81,8 +86,61 @@ def download_csv(request):
 
     for data in safer_data:
         writer.writerow([data.dot_number, data.legal_name, data.physical_address,
-            data.zipcode, data.mailing_code, data.phone, data.operating_status,
-            data.power_units, data.drivers, data.date_filed, data.email
-        ])
+                         data.zipcode, data.mailing_code, data.phone, data.operating_status,
+                         data.power_units, data.drivers, data.date_filed, data.email
+                         ])
 
     return response
+
+
+def run_scraper_background(job_id, start_id, hours):
+    job = ScraperJob.objects.get(id=job_id)
+
+    try:
+        job.mark_as_running()
+
+        # Run actual scraper here
+        call_command("run_scraper", start_id=start_id, hours=hours)
+
+        job.mark_as_completed()
+
+    except Exception as e:
+        job.mark_as_failed(str(e))
+
+
+def start_scraper_view(request):
+    if request.method == 'POST':
+        form = ScraperStartForm(request.POST)
+        if form.is_valid():
+            start_id = form.cleaned_data['start_id']
+            hours = form.cleaned_data['hours']
+
+            job = ScraperJob.objects.create(
+                start_id=start_id,
+                hours_to_run=hours,
+                status='pending'
+            )
+
+            # ✅ Mark as running immediately
+            job.mark_as_running()
+
+            try:
+                call_command('run_scraper', start_id=start_id, hours=hours)
+                job.mark_as_completed()
+                messages.success(request, 'Scraper completed successfully.')
+
+            except Exception as e:
+                job.mark_as_failed(str(e))
+                messages.error(request, f'Scraper failed: {e}')
+
+            return redirect('scraper_status')
+
+    else:
+        form = ScraperStartForm()
+
+    return render(request, 'scraper/start_scraper.html', {'form': form})
+
+
+def scraper_status_view(request):
+    jobs = ScraperJob.objects.all().order_by("-id")
+    return render(request, "scraper/scraper_status.html", {"jobs": jobs})

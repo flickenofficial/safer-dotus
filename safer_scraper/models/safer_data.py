@@ -19,6 +19,7 @@ class SaferData(models.Model):
         db_table = 'safer_data'
         verbose_name = 'SAFER Data'
         verbose_name_plural = 'SAFER Data'
+        managed = False
 
     def __str__(self):
         return f"DOT: {self.dot_number}, Name: {self.legal_name}"

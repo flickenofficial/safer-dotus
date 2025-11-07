@@ -18,6 +18,7 @@ class SaferState(models.Model):
         db_table = 'safer_state'
         verbose_name = 'SAFER State'
         verbose_name_plural = 'SAFER States'
+        managed = False
 
     def __str__(self):
         return f"ID: {self.id}, Status: {self.status}"
