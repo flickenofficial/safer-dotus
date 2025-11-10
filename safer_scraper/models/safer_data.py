@@ -20,6 +20,7 @@ class SaferData(models.Model):
         verbose_name = 'SAFER Data'
         verbose_name_plural = 'SAFER Data'
         managed = False
+        ordering = ['-fetched_at']
 
     def __str__(self):
         return f"DOT: {self.dot_number}, Name: {self.legal_name}"
