@@ -14,13 +14,28 @@ from .utils import (
 from .items import SaferItem
 
 proxy_list = [
-        "http://utzzwcbp:n3khqw2dm4l2@142.111.48.253:7030",
-        "http://utzzwcbp:n3khqw2dm4l2@23.95.150.145:6114",
-        "http://utzzwcbp:n3khqw2dm4l2@198.23.239.134:6540",
-        "http://utzzwcbp:n3khqw2dm4l2@107.172.163.27:6543",
-        "http://utzzwcbp:n3khqw2dm4l2@216.10.27.159:6837",
-        "http://utzzwcbp:n3khqw2dm4l2@142.147.128.93:6593"
-    ]
+    "http://fhxsdvde:v1wz5l4xjq1j@154.6.11.167:5636",
+    "http://fhxsdvde:v1wz5l4xjq1j@154.6.11.83:5552",
+    "http://fhxsdvde:v1wz5l4xjq1j@107.175.135.25:6466",
+    "http://fhxsdvde:v1wz5l4xjq1j@206.83.131.179:5555",
+    "http://fhxsdvde:v1wz5l4xjq1j@46.202.67.177:6173",
+    "http://fhxsdvde:v1wz5l4xjq1j@82.23.222.251:6557",
+    "http://fhxsdvde:v1wz5l4xjq1j@107.173.150.225:6679",
+    "http://fhxsdvde:v1wz5l4xjq1j@142.147.128.51:6551",
+    "http://fhxsdvde:v1wz5l4xjq1j@82.23.222.252:6558",
+    "http://fhxsdvde:v1wz5l4xjq1j@191.96.130.133:5896",
+    "http://fhxsdvde:v1wz5l4xjq1j@173.0.9.197:5780",
+    "http://fhxsdvde:v1wz5l4xjq1j@191.101.174.93:6141",
+    "http://fhxsdvde:v1wz5l4xjq1j@82.26.238.218:6525",
+    "http://fhxsdvde:v1wz5l4xjq1j@136.0.117.162:6900",
+    "http://fhxsdvde:v1wz5l4xjq1j@107.174.194.42:5484",
+    "http://fhxsdvde:v1wz5l4xjq1j@191.96.104.24:5761",
+    "http://fhxsdvde:v1wz5l4xjq1j@46.202.224.245:5797",
+    "http://fhxsdvde:v1wz5l4xjq1j@166.88.224.48:5946",
+    "http://fhxsdvde:v1wz5l4xjq1j@198.12.112.5:5016",
+    "http://fhxsdvde:v1wz5l4xjq1j@67.227.113.96:5636",
+]
+
 
 class SaferSpider(scrapy.Spider):
     name = "safer_smart"
@@ -40,7 +55,6 @@ class SaferSpider(scrapy.Spider):
         self.end_id = self.start_id + BATCH_SIZE
 
         self.logger.info(f"🚀 Starting from ID {self.start_id} → {self.end_id}")
-
 
         self.start_id = int(start_id) if start_id else 1
         self.hours_to_run = float(hours_to_run) if hours_to_run else 4.0
@@ -106,7 +120,8 @@ class SaferSpider(scrapy.Spider):
             item['zipcode'] = zipcode
             item['mailing_code'] = mailing_address
             item['phone'] = response.css('th:contains("Phone:") + td::text').get("").strip()
-            item['operating_status'] = response.css('th:contains("Operating Authority Status:") + td::text').get("").strip()
+            item['operating_status'] = response.css('th:contains("Operating Authority Status:") + td::text').get(
+                "").strip()
             item['power_units'] = response.css('th:contains("Power Units:") + td::text').get("").strip()
             item['drivers'] = response.css('th:contains("Drivers:") + td::text').get("").strip()
             item['date_filed'] = response.css('th:contains("Form Date") + td::text').get("").strip()
