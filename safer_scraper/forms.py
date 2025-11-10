@@ -1,5 +1,5 @@
 from django import forms
-from safer_scraper.models.safer_data import SaferData
+from safer_scraper.models.scraper_job import ScraperJob
 
 class ScraperStartForm(forms.Form):
     start_id = forms.IntegerField(
@@ -27,9 +27,9 @@ class ScraperStartForm(forms.Form):
     def clean_start_id(self):
         start_id = self.cleaned_data.get("start_id")
 
-        if not SaferData.objects.filter(dot_number=start_id).exists():
+        if ScraperJob.objects.filter(dot_number=start_id).exists():
             raise forms.ValidationError(
-                f"DOT Number {start_id} does not exist in the database."
+                f"DOT Number {start_id} exist in the database."
             )
 
         return start_id
