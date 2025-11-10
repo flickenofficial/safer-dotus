@@ -250,7 +250,7 @@
             <ul class="nav-links">
                 <li><a href="#">Home</a></li>
                 <li><a href="{% url 'start_scraper' %}">Scrapper</a></li>
-                <li><a href="#">Data</a></li>
+                <li><a href="{% url 'safer_data' %}">Data</a></li>
                 <li><a href="#" class="active">Scraper Jobs</a></li>
                 <li><a href="#">Contact Us</a></li>
                 <li><a href="#">About</a></li>
@@ -291,8 +291,8 @@
                                 <span class="status-badge status-pending">{{ job.status }}</span>
                             {% endif %}
                         </td>
-                        <td>{{ job.started_at }}</td>
-                        <td>{{ job.completed_at }}</td>
+                        <td>{{ job.started_at_local|date:"Y-m-d H:i:s" }}</td>
+                        <td>{{ job.completed_at_local|date:"Y-m-d H:i:s" }}</td>
                         <td>
                             <div class="error-message" title="{{ job.error_message }}">
                                 {{ job.error_message|default_if_none:"" }}

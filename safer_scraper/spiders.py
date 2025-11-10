@@ -2,8 +2,10 @@ import re
 import random
 import scrapy
 from datetime import datetime, timedelta
-from .constants import API_URL, PAYLOAD, HEADERS
+from .constants import API_URL, PAYLOAD, HEADERS, BATCH_SIZE
 from .utils import (
+    get_last_fetched_id,
+    get_last_fetched_id_last_time,
     get_recent_ids,
     get_backfill_ids_since_last_fetched,
     mark_no_data,
@@ -29,8 +31,19 @@ class SaferSpider(scrapy.Spider):
 
     def __init__(self, start_id=None, hours_to_run=None, *args, **kwargs):
         super().__init__(*args, **kwargs)
+
+        last_fetched_id = get_last_fetched_id()
+
+        self.last_day_fetched_id = (get_last_fetched_id_last_time() or 0) + 1
+        # Create range from the last fetched ID
+        self.start_id = last_fetched_id + 1
+        self.end_id = self.start_id + BATCH_SIZE
+
+        self.logger.info(f"🚀 Starting from ID {self.start_id} → {self.end_id}")
+
+
         self.start_id = int(start_id) if start_id else 1
-        self.hours_to_run = float(hours_to_run) if hours_to_run else 1.0
+        self.hours_to_run = float(hours_to_run) if hours_to_run else 4.0
         self.end_id = self.start_id + 1000
         self.deadline = datetime.utcnow() + timedelta(hours=self.hours_to_run)
         self.logger.error(

@@ -11,6 +11,12 @@
             box-sizing: border-box;
         }
 
+        .messages { list-style: none; padding: 0; margin-bottom: 1em; }
+.message { padding: 10px; border-radius: 4px; margin-bottom: 5px; }
+.message.success { background-color: #d4edda; color: #155724; }
+.message.warning { background-color: #fff3cd; color: #856404; }
+.message.error { background-color: #f8d7da; color: #721c24; }
+
         body {
             font-family: 'Helvetica Neue', Arial, sans-serif;
             background-color: #f5f5f5;
@@ -222,6 +228,13 @@
         }
     </style>
 </head>
+{% if messages %}
+  <ul class="messages">
+    {% for message in messages %}
+      <li class="message {{ message.tags }}">{{ message }}</li>
+    {% endfor %}
+  </ul>
+{% endif %}
 <body>
 
     <!-- FMCSA-style Navigation Bar -->
@@ -231,7 +244,8 @@
             <ul class="nav-links">
                 <li><a href="#">Home</a></li>
                 <li><a href="{% url 'start_scraper' %}">Scrapper</a></li>
-                <li><a href="#">Data</a></li>
+                <li><a href="{% url 'safer_data' %}">Data</a></li>
+                <li><a href="{% url 'scraper_status' %}">Scraper Jobs</a></li>
                 <li><a href="#">Contact Us</a></li>
                 <li><a href="#">About</a></li>
             </ul>
@@ -247,19 +261,32 @@
             </div>
 
             <form method="post">
-                {% csrf_token %}
+            {% csrf_token %}
 
-                <div class="form-group">
-                    <label for="id_start_id">DOT Number:</label>
-                    <input type="number" name="start_id" id="id_start_id" required placeholder="Enter starting DOT number">
+            {% if form.errors %}
+                <div class="error-box" style="background:#ffdddd;padding:10px;margin-bottom:15px;border-left:4px solid red;">
+                    <strong>Please fix the errors:</strong>
+                    <ul>
+                        {% for field in form %}
+                            {% for error in field.errors %}
+                                <li>{{ field.label }}: {{ error }}</li>
+                            {% endfor %}
+                        {% endfor %}
+                    </ul>
                 </div>
+            {% endif %}
 
-                <div class="form-group">
-                    <label for="id_hours">Hours to run:</label>
-                    <input type="number" step="any" name="hours" id="id_hours" required placeholder="Enter number of hours to run">
-                </div>
+            <div class="form-group">
+                <label for="id_start_id">DOT Number:</label>
+                {{ form.start_id }}
+            </div>
 
-                <button type="submit">Start Scraper</button>
+            <div class="form-group">
+                <label for="id_hours">Hours to run:</label>
+                {{ form.hours }}
+            </div>
+
+            <button type="submit">Start Scraper</button>
             </form>
 
             <div class="status-link">

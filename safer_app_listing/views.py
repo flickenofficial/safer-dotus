@@ -4,11 +4,6 @@ from django.shortcuts import render, redirect
 from django.http import HttpResponse
 from django.core.paginator import Paginator
 from safer_scraper.models import SaferData
-from django.core.management import call_command
-from safer_scraper.models.scraper_job import ScraperJob
-from .forms import ScraperStartForm
-from django.contrib import messages
-from threading import Thread
 
 
 def build_filtered_queryset(request, base_queryset=None):
@@ -87,52 +82,3 @@ def download_csv(request):
         ])
 
     return response
-
-
-def run_scraper_background(job_id, start_id, hours):
-    """Run scraper in background thread for non-blocking execution."""
-    job = ScraperJob.objects.get(id=job_id)
-
-    try:
-        job.mark_as_running()
-
-        # Run actual scraper
-        call_command("run_scraper", start_id=start_id, hours=hours)
-
-        job.mark_as_completed()
-    except Exception as e:
-        job.mark_as_failed(str(e))
-
-
-def start_scraper_view(request):
-    """Start scraper page: submit form and redirect immediately to status page."""
-    if request.method == 'POST':
-        form = ScraperStartForm(request.POST)
-        if form.is_valid():
-            start_id = form.cleaned_data['start_id']
-            hours = form.cleaned_data['hours']
-
-            # Create job in DB
-            job = ScraperJob.objects.create(
-                start_id=start_id,
-                hours_to_run=hours,
-                status='pending'
-            )
-
-            # Run scraper in background thread
-            Thread(target=run_scraper_background, args=(job.id, start_id, hours)).start()
-
-            messages.success(request, 'Scraper started successfully.')
-            return redirect('scraper_status')
-        else:
-            messages.error(request, 'Please provide valid inputs.')
-    else:
-        form = ScraperStartForm()
-
-    return render(request, 'scraper/start_scraper.html', {'form': form})
-
-
-def scraper_status_view(request):
-    """Display all scraper jobs and their statuses."""
-    jobs = ScraperJob.objects.all().order_by("-id")
-    return render(request, "scraper/scraper_status.html", {"jobs": jobs})
