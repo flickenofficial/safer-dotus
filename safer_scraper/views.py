@@ -15,7 +15,7 @@ def run_scraper_background(job_id, start_id, hours):
         job.mark_as_running()
 
         # Run actual scraper
-        call_command("run_scraper", start_id=start_id, hours=hours)
+        call_command("run_scraper", start_id=start_id, hours=hours, job_id=job_id)
 
         job.mark_as_completed()
     except Exception as e:
