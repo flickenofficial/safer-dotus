@@ -11,6 +11,7 @@ https://docs.djangoproject.com/en/5.2/ref/settings/
 """
 
 from pathlib import Path
+from celery.schedules import crontab
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -128,3 +129,11 @@ CELERY_BROKER_URL = 'redis://127.0.0.1:6379/0'
 CELERY_RESULT_BACKEND = 'redis://127.0.0.1:6379/0'
 CELERY_TIMEZONE = 'America/Denver'  # US Mountain Time
 CELERY_ENABLE_UTC = True
+
+
+CELERY_BEAT_SCHEDULE = {
+    'run_test_scraper': {
+        'task': 'safer_scraper.tasks.run_daily_scraper',
+        'schedule': crontab(hour=15, minute=0),  # 8 AM Mountain Time
+    }
+}
