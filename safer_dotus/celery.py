@@ -12,14 +12,3 @@ app.config_from_object('django.conf:settings', namespace='CELERY')
 
 # Autodiscover tasks in apps
 app.autodiscover_tasks()
-
-
-# CELERY_BEAT_SCHEDULE = {
-#     'run_test_scraper': {
-#         'task': 'safer_scraper.tasks.run_daily_scraper',  # your task name
-#         'schedule': crontab(minute='*'),  # 1:05 AM Mountain Time
-#         'args': (),  # optional, if your task requires arguments
-#     },
-# }
-
-
