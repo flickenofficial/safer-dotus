@@ -16,18 +16,32 @@ class Command(BaseCommand):
         parser.add_argument(
             '--hours', type=float, help='Number of hours to run the scraper'
         )
+        parser.add_argument(
+            '--job-id', type=int, help='Existing ScraperJob ID to reuse'
+        )
 
     def handle(self, *args, **options):
-        # Fetch start_id from DB if not provided
-        start_id = options.get('start_id') or get_last_fetched_id() + 1
-        hours = options.get('hours') or 4.0  # default 4 hours
+        provided_start_id = options.get('start_id')
+        provided_hours = options.get('hours')
+        job_id = options.get('job_id')
 
-        # Create a scraper job in DB
-        job = ScraperJob.objects.create(
-            start_id=start_id,
-            hours_to_run=hours,
-            status='pending'
-        )
+        if job_id:
+            job = ScraperJob.objects.get(id=job_id)
+            start_id = provided_start_id or job.start_id or get_last_fetched_id() + 1
+            hours = provided_hours or job.hours_to_run or 4.0
+            # Keep DB record aligned with the inputs we actually use
+            job.start_id = start_id
+            job.hours_to_run = hours
+            job.status = 'pending'
+            job.save(update_fields=['start_id', 'hours_to_run', 'status'])
+        else:
+            start_id = provided_start_id or get_last_fetched_id() + 1
+            hours = provided_hours or 4.0  # default 4 hours
+            job = ScraperJob.objects.create(
+                start_id=start_id,
+                hours_to_run=hours,
+                status='pending'
+            )
         job.mark_as_running()
 
         self.stdout.write(self.style.SUCCESS(
