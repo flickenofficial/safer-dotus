@@ -2,6 +2,8 @@ from itemadapter import ItemAdapter
 from django.utils import timezone
 from django.db import transaction
 from asgiref.sync import sync_to_async
+from twisted.internet.defer import ensureDeferred
+
 from ..models import SaferData
 from .base import BasePipeline
 
@@ -85,6 +87,6 @@ class DjangoItemPipeline(BasePipeline):
         if self.buffer:
             await self._sync_flush(spider)
 
-    async def close_spider(self, spider):
+    def close_spider(self, spider):
         """Flush remaining items when spider closes."""
-        await self.flush_buffer(spider)
+        return ensureDeferred(self.flush_buffer(spider))

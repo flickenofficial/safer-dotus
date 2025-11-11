@@ -1,10 +1,14 @@
-from django.shortcuts import render, redirect
+import subprocess
+import sys
+
+from django.conf import settings
 from django.contrib import messages
-from django.core.management import call_command
-from threading import Thread
-from .models.scraper_job import ScraperJob
-from safer_scraper.forms import ScraperStartForm
+from django.shortcuts import render, redirect
 from django.utils.timezone import localtime
+from threading import Thread
+
+from safer_scraper.forms import ScraperStartForm
+from .models.scraper_job import ScraperJob
 
 
 def run_scraper_background(job_id, start_id, hours):
@@ -14,10 +18,19 @@ def run_scraper_background(job_id, start_id, hours):
     try:
         job.mark_as_running()
 
-        # Run actual scraper
-        call_command("run_scraper", start_id=start_id, hours=hours, job_id=job_id)
+        manage_py = settings.BASE_DIR / "manage.py"
+        command = [
+            sys.executable,
+            str(manage_py),
+            "run_scraper",
+            f"--job-id={job_id}",
+        ]
+        if start_id is not None:
+            command += ["--start_id", str(start_id)]
+        if hours is not None:
+            command += ["--hours", str(hours)]
 
-        job.mark_as_completed()
+        subprocess.Popen(command, cwd=settings.BASE_DIR)
     except Exception as e:
         job.mark_as_failed(str(e))
 
