@@ -29,7 +29,7 @@ class Command(BaseCommand):
         start_id = provided_start_id or job.start_id
         hours = provided_hours or job.hours_to_run or 4.0
         # Keep DB record aligned with the inputs we actually use
-        job.start_id = start_id
+        job.start_id = start_id or get_last_fetched_id()
         job.hours_to_run = hours
         job.status = 'pending'
         job.save(update_fields=['start_id', 'hours_to_run', 'status'])
