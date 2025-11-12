@@ -19,7 +19,6 @@ class SaferData(models.Model):
         db_table = 'safer_data'
         verbose_name = 'SAFER Data'
         verbose_name_plural = 'SAFER Data'
-        managed = False
         ordering = ['-fetched_at']
 
     def __str__(self):
