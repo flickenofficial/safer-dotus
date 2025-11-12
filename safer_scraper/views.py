@@ -1,38 +1,10 @@
-import subprocess
-import sys
-
-from django.conf import settings
 from django.contrib import messages
 from django.shortcuts import render, redirect
 from django.utils.timezone import localtime
-from threading import Thread
 
 from safer_scraper.forms import ScraperStartForm
+from safer_scraper.tasks import run_scraper_job
 from .models.scraper_job import ScraperJob
-
-
-def run_scraper_background(job_id, start_id, hours):
-    """Run scraper in background thread for non-blocking execution."""
-    job = ScraperJob.objects.get(id=job_id)
-
-    try:
-        job.mark_as_running()
-
-        manage_py = settings.BASE_DIR / "manage.py"
-        command = [
-            sys.executable,
-            str(manage_py),
-            "run_scraper",
-            f"--job-id={job_id}",
-        ]
-        if start_id is not None:
-            command += ["--start_id", str(start_id)]
-        if hours is not None:
-            command += ["--hours", str(hours)]
-
-        subprocess.Popen(command, cwd=settings.BASE_DIR)
-    except Exception as e:
-        job.mark_as_failed(str(e))
 
 
 def start_scraper_view(request):
@@ -59,8 +31,13 @@ def start_scraper_view(request):
                 status='pending'
             )
 
-            # Run scraper in background thread
-            Thread(target=run_scraper_background, args=(job.id, start_id, hours)).start()
+            # Queue scraper work in Celery so this request returns immediately
+            try:
+                run_scraper_job.delay(job.id, start_id=start_id, hours=hours)
+            except Exception as exc:
+                job.mark_as_failed(str(exc))
+                messages.error(request, "Failed to queue scraper task. Please try again.")
+                return redirect('scraper_status')
 
             messages.success(request, 'Scraper started successfully.')
             return redirect('scraper_status')
