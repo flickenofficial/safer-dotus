@@ -26,7 +26,7 @@ class Command(BaseCommand):
         job_id = options.get('job_id')
 
         job = ScraperJob.objects.get(id=job_id)
-        start_id = provided_start_id or job.start_id or get_last_fetched_id() + 1
+        start_id = provided_start_id or job.start_id
         hours = provided_hours or job.hours_to_run or 4.0
         # Keep DB record aligned with the inputs we actually use
         job.start_id = start_id
@@ -47,7 +47,8 @@ class Command(BaseCommand):
         settings.set('LOG_LEVEL', 'INFO')
         settings.set('RETRY_TIMES', 4)
         settings.set('ROBOTSTXT_OBEY', False)
-        settings.set('DOWNLOAD_DELAY', 1)
+        settings.set('DOWNLOAD_DELAY', 0.5)
+        settings.set('CONCURRENT_REQUESTS', 6)
 
         try:
             process = CrawlerProcess(settings=settings)

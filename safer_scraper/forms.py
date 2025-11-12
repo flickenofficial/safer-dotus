@@ -27,9 +27,9 @@ class ScraperStartForm(forms.Form):
     def clean_start_id(self):
         start_id = self.cleaned_data.get("start_id")
 
-        if ScraperJob.objects.filter(start_id=start_id).exists():
-            raise forms.ValidationError(
-                f"DOT Number {start_id} exist in the database."
-            )
+        # if ScraperJob.objects.filter(start_id=start_id).exists():
+        #     raise forms.ValidationError(
+        #         f"DOT Number {start_id} exist in the database."
+        #     )
 
         return start_id

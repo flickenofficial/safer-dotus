@@ -13,7 +13,7 @@ HEADERS = {
 }
 
 # Scraper Configuration
-BATCH_SIZE = 10
+BATCH_SIZE = 1000
 RECENT_WINDOW = 0
 BACKFILL_LIMIT = 10
 RETRY_INTERVALS = [3, 12, 24, 72, 168]  # hours

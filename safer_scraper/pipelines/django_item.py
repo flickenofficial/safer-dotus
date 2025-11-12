@@ -87,6 +87,6 @@ class DjangoItemPipeline(BasePipeline):
         if self.buffer:
             await self._sync_flush(spider)
 
-    def close_spider(self, spider):
+    async def close_spider(self, spider):
         """Flush remaining items when spider closes."""
-        return ensureDeferred(self.flush_buffer(spider))
+        await self.flush_buffer(spider)
