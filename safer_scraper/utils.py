@@ -16,6 +16,20 @@ def get_last_fetched_id():
         return 0
 
 
+def get_proxies():
+    with open("safer_scraper/proxies.txt", mode='r') as f:
+        raw_proxies = f.readlines()
+
+    proxies = list()
+    for proxy in raw_proxies:
+        proxy = proxy.strip().split(':')
+        proxies.append(
+            f'http://{proxy[2]}:{proxy[3]}@{proxy[0]}:{proxy[1]}'
+        )
+
+    return proxies
+
+
 def get_last_fetched_id_last_time():
     today = timezone.now().date()
     return (

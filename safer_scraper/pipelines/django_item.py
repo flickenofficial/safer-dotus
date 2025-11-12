@@ -2,7 +2,6 @@ from itemadapter import ItemAdapter
 from django.utils import timezone
 from django.db import transaction
 from asgiref.sync import sync_to_async
-from twisted.internet.defer import ensureDeferred
 
 from ..models import SaferData
 from .base import BasePipeline
@@ -31,6 +30,10 @@ class DjangoItemPipeline(BasePipeline):
             'email': adapter.get('email', ''),
             'fetched_at': adapter.get('fetched_at', timezone.now()),
         }
+
+        # Log the item for debugging purposes
+        spider.logger.info(f"Processed item: {data}")
+
         self.buffer.append(data)
 
         if len(self.buffer) >= self.buffer_limit:

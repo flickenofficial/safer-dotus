@@ -10,34 +10,14 @@ from .utils import (
     get_backfill_ids_since_last_fetched,
     mark_no_data,
     mark_fetched,
+    get_proxies
 )
 from .items import SaferItem
 
 # -------------------------------------------------------------------
 # Global proxy list (could be moved to settings.py)
 # -------------------------------------------------------------------
-proxy_list = [
-    "http://fhxsdvde:v1wz5l4xjq1j@154.6.11.167:5636",
-    "http://fhxsdvde:v1wz5l4xjq1j@154.6.11.83:5552",
-    "http://fhxsdvde:v1wz5l4xjq1j@107.175.135.25:6466",
-    "http://fhxsdvde:v1wz5l4xjq1j@206.83.131.179:5555",
-    "http://fhxsdvde:v1wz5l4xjq1j@46.202.67.177:6173",
-    "http://fhxsdvde:v1wz5l4xjq1j@82.23.222.251:6557",
-    "http://fhxsdvde:v1wz5l4xjq1j@107.173.150.225:6679",
-    "http://fhxsdvde:v1wz5l4xjq1j@142.147.128.51:6551",
-    "http://fhxsdvde:v1wz5l4xjq1j@82.23.222.252:6558",
-    "http://fhxsdvde:v1wz5l4xjq1j@191.96.130.133:5896",
-    "http://fhxsdvde:v1wz5l4xjq1j@173.0.9.197:5780",
-    "http://fhxsdvde:v1wz5l4xjq1j@191.101.174.93:6141",
-    "http://fhxsdvde:v1wz5l4xjq1j@82.26.238.218:6525",
-    "http://fhxsdvde:v1wz5l4xjq1j@136.0.117.162:6900",
-    "http://fhxsdvde:v1wz5l4xjq1j@107.174.194.42:5484",
-    "http://fhxsdvde:v1wz5l4xjq1j@191.96.104.24:5761",
-    "http://fhxsdvde:v1wz5l4xjq1j@46.202.224.245:5797",
-    "http://fhxsdvde:v1wz5l4xjq1j@166.88.224.48:5946",
-    "http://fhxsdvde:v1wz5l4xjq1j@198.12.112.5:5016",
-    "http://fhxsdvde:v1wz5l4xjq1j@67.227.113.96:5636",
-]
+proxy_list = get_proxies()
 
 
 class SaferSpider(scrapy.Spider):
@@ -94,14 +74,34 @@ class SaferSpider(scrapy.Spider):
         if self.infinite_loop:
             code = self.start_id
             while not self.stop_if_deadline("start_requests"):
-                yield self._build_request(code)
+                payload = self.PAYLOAD.format(code)
+                yield scrapy.Request(
+                    self.API_URL,
+                    method="POST",
+                    body=payload,
+                    headers=self.HEADERS,
+                    meta={"code": code, "proxy": self.get_proxy()},
+                    dont_filter=True,
+                    callback=self.parse,
+                    errback=self.handle_error,
+                )
                 code += 1
 
         else:
             for code in self.ids_to_scan():
                 if self.stop_if_deadline("start_requests"):
                     return
-                yield self._build_request(code)
+                payload = self.PAYLOAD.format(code)
+                yield scrapy.Request(
+                    self.API_URL,
+                    method="POST",
+                    body=payload,
+                    headers=self.HEADERS,
+                    meta={"code": code, "proxy": self.get_proxy()},
+                    dont_filter=True,
+                    callback=self.parse,
+                    errback=self.handle_error,
+                )
 
     def _build_request(self, code):
         payload = self.PAYLOAD.format(code)
@@ -125,7 +125,7 @@ class SaferSpider(scrapy.Spider):
     # -------------------------------------------------------------------
     # Parsing
     # -------------------------------------------------------------------
-    async def parse(self, response):
+    def parse(self, response):
         code = response.meta["code"]
         now = datetime.utcnow().isoformat()
 
@@ -135,7 +135,7 @@ class SaferSpider(scrapy.Spider):
         try:
             legal_name = response.css('th:contains("Legal Name:") + td::text').get("").strip()
             if not legal_name:
-                await mark_no_data(code, now)
+                mark_no_data(code, now)
                 return
 
             mailing_address = " ".join(response.css('th:contains("Mailing Address:") + td::text').getall()).strip()
@@ -167,9 +167,9 @@ class SaferSpider(scrapy.Spider):
 
         except Exception as e:
             self.logger.warning(f"Parse failed for DOT {code}: {e}")
-            await mark_no_data(code, now)
+            mark_no_data(code, now)
 
-    async def parse_email(self, response, **kwargs):
+    def parse_email(self, response):
         if self.stop_if_deadline("parse_email"):
             return
 
@@ -179,12 +179,12 @@ class SaferSpider(scrapy.Spider):
         item["email"] = response.css('label:contains("Email:") + span::text').get("").strip()
 
         yield item
-        await mark_fetched(item["dot_number"], now)
+        mark_fetched(item["dot_number"], now)
 
     # -------------------------------------------------------------------
     # Error handler
     # -------------------------------------------------------------------
-    async def handle_error(self, failure):
+    def handle_error(self, failure):
         if self.stop_if_deadline("handle_error"):
             return
 
@@ -195,7 +195,7 @@ class SaferSpider(scrapy.Spider):
         if item:
             item["fetched_at"] = now
             yield item
-            await mark_no_data(code, now)
+            mark_no_data(code, now)
         else:
             self.logger.warning(f"⚠️ ID {code} failed: {failure.value}")
-            await mark_no_data(code, now)
+            mark_no_data(code, now)
