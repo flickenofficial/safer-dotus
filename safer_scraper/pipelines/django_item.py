@@ -10,7 +10,7 @@ from .base import BasePipeline
 class DjangoItemPipeline(BasePipeline):
     """Async-safe pipeline to bulk save items to Django database."""
 
-    def __init__(self, buffer_limit=100):
+    def __init__(self, buffer_limit=5):
         self.buffer = []
         self.buffer_limit = buffer_limit
 
