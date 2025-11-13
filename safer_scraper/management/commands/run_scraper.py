@@ -47,8 +47,8 @@ class Command(BaseCommand):
         settings.set('LOG_LEVEL', 'INFO')
         settings.set('RETRY_TIMES', 4)
         settings.set('ROBOTSTXT_OBEY', False)
-        settings.set('DOWNLOAD_DELAY', 0.5)
-        settings.set('CONCURRENT_REQUESTS', 6)
+        settings.set('DOWNLOAD_DELAY', 1)
+        settings.set('CONCURRENT_REQUESTS', 4)
 
         try:
             process = CrawlerProcess(settings=settings)
