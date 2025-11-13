@@ -14,12 +14,6 @@ from .utils import (
 )
 from .items import SaferItem
 
-# -------------------------------------------------------------------
-# Global proxy list (could be moved to settings.py)
-# -------------------------------------------------------------------
-proxy_list = get_proxies()
-
-
 class SaferSpider(scrapy.Spider):
     name = "safer_smart"
 
@@ -33,6 +27,7 @@ class SaferSpider(scrapy.Spider):
     def __init__(self, start_id=None, hours_to_run=None, *args, **kwargs):
         super().__init__(*args, **kwargs)
 
+        self.proxy_list = get_proxies()
         if not start_id:
             self.infinite_loop = False
             last_fetched_id = get_last_fetched_id()
@@ -57,7 +52,7 @@ class SaferSpider(scrapy.Spider):
     # Utility helpers
     # -------------------------------------------------------------------
     def get_proxy(self):
-        return random.choice(proxy_list)
+        return random.choice(self.proxy_list)
 
     def stop_if_deadline(self, context: str = "") -> bool:
         """Gracefully stop spider when deadline reached."""
@@ -73,35 +68,19 @@ class SaferSpider(scrapy.Spider):
     def start_requests(self):
         if self.infinite_loop:
             code = self.start_id
-            while not self.stop_if_deadline("start_requests"):
-                payload = self.PAYLOAD.format(code)
-                yield scrapy.Request(
-                    self.API_URL,
-                    method="POST",
-                    body=payload,
-                    headers=self.HEADERS,
-                    meta={"code": code, "proxy": self.get_proxy()},
-                    dont_filter=True,
-                    callback=self.parse,
-                    errback=self.handle_error,
-                )
-                code += 1
-
-        else:
-            for code in self.ids_to_scan():
+            batch_end_id = code + BATCH_SIZE
+            for code in range(self.start_id, batch_end_id):
                 if self.stop_if_deadline("start_requests"):
                     return
-                payload = self.PAYLOAD.format(code)
-                yield scrapy.Request(
-                    self.API_URL,
-                    method="POST",
-                    body=payload,
-                    headers=self.HEADERS,
-                    meta={"code": code, "proxy": self.get_proxy()},
-                    dont_filter=True,
-                    callback=self.parse,
-                    errback=self.handle_error,
-                )
+                yield self._build_request(code)
+
+
+        else:
+            # In non-infinite loop mode, process the IDs as usual
+            for code in self.ids_to_scan():
+                if self.stop_if_deadline("start_requests"):
+                    return  # Stop if the deadline is reached
+                yield self._build_request(code)
 
     def _build_request(self, code):
         payload = self.PAYLOAD.format(code)
@@ -195,7 +174,6 @@ class SaferSpider(scrapy.Spider):
         if item:
             item["fetched_at"] = now
             yield item
-            mark_no_data(code, now)
         else:
             self.logger.warning(f"⚠️ ID {code} failed: {failure.value}")
             mark_no_data(code, now)
