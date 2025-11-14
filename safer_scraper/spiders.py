@@ -31,11 +31,11 @@ class SaferSpider(scrapy.Spider):
         if not start_id:
             self.infinite_loop = False
             last_fetched_id = get_last_fetched_id()
-            self.last_day_fetched_id = (get_last_fetched_id_last_time() or 0) + 1
+            # self.last_day_fetched_id = (get_last_fetched_id_last_time() or 0) + 1
 
             self.start_id = last_fetched_id + 1
             self.end_id = self.start_id + BATCH_SIZE
-            self.deadline = datetime.utcnow() + timedelta(hours=4)
+            self.deadline = datetime.utcnow() + timedelta(hours=0.21)
 
             self.logger.info(f"🚀 Infinite mode: IDs {self.start_id} → {self.end_id}")
         else:
@@ -98,7 +98,7 @@ class SaferSpider(scrapy.Spider):
     def ids_to_scan(self):
         ids = list(range(self.start_id, self.end_id))
         ids = get_recent_ids(ids)
-        ids += get_backfill_ids_since_last_fetched(self.start_id - 1)
+        # ids += get_backfill_ids_since_last_fetched(self.start_id - 1)
         return sorted(set(ids))
 
     # -------------------------------------------------------------------

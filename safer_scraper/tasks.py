@@ -23,7 +23,7 @@ def run_daily_scraper():
     """
     job = ScraperJob.objects.create(
         start_id=0,
-        hours_to_run=0,
+        hours_to_run=0.21,
         status="pending",
     )
     run_scraper_job.delay(job.id)
