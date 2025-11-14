@@ -13,7 +13,7 @@ class ScraperJob(models.Model):
 
     id = models.AutoField(primary_key=True)
     start_id = models.IntegerField()
-    hours_to_run = models.IntegerField()
+    hours_to_run = models.FloatField()
     status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='pending')
     started_at = models.DateTimeField(null=True, blank=True)
     completed_at = models.DateTimeField(null=True, blank=True)
