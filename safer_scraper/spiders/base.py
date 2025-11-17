@@ -42,6 +42,7 @@ class SaferSpider(scrapy.Spider):
             self.infinite_loop = True
             self.start_id = int(start_id)
             self.hours_to_run = float(hours_to_run or 4.0)
+            self.end_id = 1000
             self.deadline = datetime.utcnow() + timedelta(hours=self.hours_to_run)
             self.logger.info(
                 f"🚀 Timed mode: start DOT {self.start_id}, "
