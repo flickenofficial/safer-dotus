@@ -27,7 +27,7 @@ class Command(BaseCommand):
 
         job = ScraperJob.objects.get(id=job_id)
         start_id = provided_start_id or job.start_id
-        hours = provided_hours or job.hours_to_run or 4.0
+        hours = provided_hours or job.hours_to_run
         # Keep DB record aligned with the inputs we actually use
         job.start_id = start_id or get_last_fetched_id()
         job.hours_to_run = hours

@@ -132,8 +132,9 @@ CELERY_ENABLE_UTC = True
 
 
 CELERY_BEAT_SCHEDULE = {
-    'run_test_scraper': {
+    'run_scraper_window': {
         'task': 'safer_scraper.tasks.run_daily_scraper',
-        'schedule': crontab(hour=8, minute=0),  # 8 AM Mountain Time
-    }
+        # Run every 15 minutes from 8:00 AM through 5:45 PM MT
+        'schedule': crontab(minute='*/15', hour='8-17'),
+    },
 }
