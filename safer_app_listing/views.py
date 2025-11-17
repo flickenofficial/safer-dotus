@@ -38,11 +38,11 @@ def build_filtered_queryset(request, base_queryset=None):
         base_queryset = base_queryset.filter(filters)
 
     if dot_from and dot_to:
-        base_queryset = base_queryset.filter(dot_number__range=[dot_from, dot_to])
+        base_queryset = base_queryset.filter(dot_number__range=[dot_from, dot_to]).order_by('-dot_number')
     elif dot_from:
-        base_queryset = base_queryset.filter(dot_number__gte=dot_from)
+        base_queryset = base_queryset.filter(dot_number__gte=dot_from).order_by('-dot_number')
     elif dot_to:
-        base_queryset = base_queryset.filter(dot_number__lte=dot_to)
+        base_queryset = base_queryset.filter(dot_number__lte=dot_to).order_by('-dot_number')
 
     return base_queryset
 
