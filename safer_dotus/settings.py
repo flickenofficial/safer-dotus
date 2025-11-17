@@ -137,4 +137,12 @@ CELERY_BEAT_SCHEDULE = {
         # Run every 15 minutes from 8:00 AM through 5:45 PM MT
         'schedule': crontab(minute='*/15', hour='8-17'),
     },
+    'run_missing_yesterday_docs': {
+        'task': 'safer_scraper.tasks.run_missing_docs_job',
+        'schedule': crontab(minute=0, hour=7),
+    },
+    'run_missing_today_docs': {
+        'task': 'safer_scraper.tasks.run_missing_docs_today_job',
+        'schedule': crontab(minute=0, hour=19),
+    },
 }
