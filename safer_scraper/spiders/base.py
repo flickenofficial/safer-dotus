@@ -2,17 +2,17 @@ import re
 import random
 import scrapy
 from datetime import datetime, timedelta
-from .constants import API_URL, PAYLOAD, HEADERS, BATCH_SIZE
-from .utils import (
+from ..constants import API_URL, PAYLOAD, HEADERS, BATCH_SIZE
+from ..utils import (
     get_last_fetched_id,
     get_last_fetched_id_last_time,
     get_recent_ids,
     get_backfill_ids_since_last_fetched,
     mark_no_data,
     mark_fetched,
-    get_proxies
+    get_proxies,
 )
-from .items import SaferItem
+from ..items import SaferItem
 
 class SaferSpider(scrapy.Spider):
     name = "safer_smart"
@@ -42,6 +42,7 @@ class SaferSpider(scrapy.Spider):
             self.infinite_loop = True
             self.start_id = int(start_id)
             self.hours_to_run = float(hours_to_run or 4.0)
+            self.end_id = 1000
             self.deadline = datetime.utcnow() + timedelta(hours=self.hours_to_run)
             self.logger.info(
                 f"🚀 Timed mode: start DOT {self.start_id}, "

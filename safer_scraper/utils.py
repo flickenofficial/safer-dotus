@@ -1,9 +1,11 @@
 import asyncio
+from datetime import timedelta
+from typing import Iterable
 
 from django.db import models, transaction
 from django.utils import timezone
 from asgiref.sync import async_to_sync, sync_to_async
-from .models import SaferState
+from .models import SaferState, SaferData
 
 
 def get_last_fetched_id():
@@ -67,6 +69,54 @@ def get_backfill_ids_since_last_fetched(last_fetched_id):
         )
     except Exception:
         return []
+
+
+def _iter_missing_numbers(min_dot: int, max_dot: int, existing_iter: Iterable[int]) -> Iterable[int]:
+    """
+    Stream numbers between min/max that are absent from the existing iterator.
+    """
+    if min_dot is None or max_dot is None:
+        return iter(())
+
+    def generator():
+        next_expected = min_dot
+        for dot in existing_iter:
+            dot = int(dot)
+            while next_expected < dot and next_expected <= max_dot:
+                yield next_expected
+                next_expected += 1
+            if dot == next_expected:
+                next_expected += 1
+        while next_expected <= max_dot:
+            yield next_expected
+            next_expected += 1
+
+    return generator()
+
+
+def get_missing_dot_numbers_for_date(target_date, chunk_size: int = 10000) -> Iterable[int]:
+    """
+    Yield DOT numbers for the provided date that are missing from SaferData between the
+    observed min/max range. Uses streaming iteration so 1M+ ranges are OK.
+    """
+    try:
+        queryset = SaferData.objects.filter(fetched_at__date=target_date)
+        bounds = queryset.aggregate(
+            min_dot=models.Min("dot_number"),
+            max_dot=models.Max("dot_number"),
+        )
+        min_dot = bounds.get("min_dot")
+        max_dot = bounds.get("max_dot")
+        if min_dot is None or max_dot is None:
+            return iter(())
+        existing_iter = (
+            queryset.order_by("dot_number")
+            .values_list("dot_number", flat=True)
+            .iterator(chunk_size=chunk_size)
+        )
+        return _iter_missing_numbers(min_dot, max_dot, existing_iter)
+    except Exception:
+        return iter(())
 
 
 @transaction.atomic
